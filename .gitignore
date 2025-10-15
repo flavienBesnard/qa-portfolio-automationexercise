@@ -1,0 +1,13 @@
+# Maven/Java
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+*.log
+# IDE
+.idea/
+.vscode/
+*.iml
+# Allure
+**/allure-results/
+**/allure-report/
+# OS
+.DS_Store
