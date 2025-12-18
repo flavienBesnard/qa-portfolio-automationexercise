@@ -11,3 +11,5 @@
 **/allure-report/
 # OS
 .DS_Store
+# Excel temporary files
+~$*.xlsx

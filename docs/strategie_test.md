@@ -1,36 +1,172 @@
-# stratégie de test (Phase 0 - socle technique)
+# stratégie de test - Projet AutomationExercise
 
-## Objectif et périmètre
-- **Objectif** : disposer d'un socle reproductible pour la suite du projet (smokes UI/API, CI verte).
-- **Périmètre** : UI Web + API publiques d'AutomationExercise (couverte de façon légère).
-- **Hors périmètre** Phase 0 : performances et sécurité (seront traités sur app/mocks locales).
-
-## Environnements et exécution
-- **Local Windows (PowerShell)** : 
-  - API : `mvn -pl api-tests -am -DAPI_BASE_URL=https://automationexercise.com/api test`  
-  - UI  : `mvn -pl ui-tests -am -DBASE_URL=https://automationexercise.com test`
-- **CI GitHub (runner Linux)** : workflow `ci-min.yml` avec service container **Selenium** (Chrome **headless**).
-- **Cibles** : EXTERNAL_TARGET uniquement (site de démo), pas de charge (pas de tests de perf sur un site tiers).
-
-## Données de test
-- Générées à la volée (Faker sera utilisé en Phase 3-4).
-- Les smokes sont **idempotents** →  Pas de persistance obligatoire en Phase 0.
-
-## Types et niveaux (Phase 0)
-- Niveaux : API (1 smoke), UI (1 smoke).
-- Types : **Smoke** (présence/chemin critique uniquement).
-- Critères d'arrêt : smokes verts en local et en CI.
-
-## Risques adressés (Phase 0)
-- **R1 “chez moi/CI”** → versions figées (JDK 21), navigateur en **conteneur Selenium**.
-- **R2 instabilité d’URL/env** → **variables d’environnement** (`BASE_URL`, `API_BASE_URL`, `SELENIUM_REMOTE_URL`).
-- **R3 flaky de démarrage** → **smokes** très courts + exécution **headless** en CI.
-
-## Prochaines étapes (Phases 1+)
-- Définir exigences, concevoir cas de test H/M/B puis automatiser API -> UI, Allure, mocks,a11y/perf/sécu.
+## 1. Objectif du document
+Ce document décrit la stratégie de test mise en place sur le projet AutomationExercise.
+Il a pour objectif de cadrer la démarche qualité globale ; types de tests, niveaux de tests, priorisation, risques et stratégie d'automatisation.
+Ce document s'inscrit dans une logique **ISTQB** et sert de référence pour : 
+- la conception des tests
+- l'exécution manuelle
+- l'automatisation
 
 
-## Glossaire (TP)
+## 2. Contexte du projet 
+AutomationExercise est un site e-commerce de démonstration utilisé comme support de projet QA.
+
+Le projet vise à démontrer : 
+- une démarche de test structurée
+- la traçabilité exigences -> tests -> exécutions -> bugs
+- une automatisation ciblée et pertinente (UI + API)
+- un socle technique propre et maintenable
+
+## 3. Périmètre de test
+### 3.1 Périmètre couvert
+**Interface Web (UI)** :
+  - authentification / compte utilisateur
+  - catalogue produits
+  - panier
+  - checkout / paiement
+  - formulaire de contact
+
+**API publiques** : 
+  - consultation produits / marques
+  - recherche
+  - authentification
+  - CRUD utilisateur (create, read, update, delete)
+
+
+### 3.2 Hors périmètre
+- tests de performance (site tiers de démonstration)
+- tests de sécurité approfondis
+- tests de compatibilité navigateurs étendus
+- tests d'accessibilité avancés
+
+Ces aspects pourraient être traités sur une application interne ou un environnement dédié, hors site tiers.
+
+## 4. Niveaux et types de test
+
+### 4.1 Niveaux de test
+- **Tests d'intégration (API)**
+- **Tests système (UI Web)**
+
+Chaque niveau est traité indépendamment mais de manière cohérente au sein de la stratégie globale.
+
+
+### 4.2 Types de tests 
+- Tests fonctionnels
+- Tests positifs et négatifs
+- Tests exploratoires (documentés via chartes)
+- Tests automatisés (smoke et régression ciblée)
+
+## 5. Priorisation et approche basée sur le risque
+
+Les cas de test sont priorisés selon leur **impact métier** : 
+- **Priorité Haute (H)** : parcours critiques positifs (ex : login OK, ajout panier, checkout, paiement)
+- **Priorité Moyenne (M)** : fonctionnalités importantes mais non bloquantes (ex : login KO, validations, erreurs utilisateur)
+- **Priorité Basse (B)** : cas limites ou secondaires
+
+
+Cette priorisation guide : 
+- l'ordre d'exécution manuelle
+- le choix des tests automatisés
+- la définition du smoke test
+
+## 6. Tests manuels (réalisés)
+Les tests manuels ont été réalisés en amont de l'automatisation :
+- exigences fonctionnelles formalisées
+- cas de test détaillés
+- exécution documentée dans un journal de test
+- anomalies tracées dans un rapport de bugs
+- traçabilité assurée via une RTM
+
+Les documents produits constituent la base de référence du projet.
+
+## 7. Tests exploratoires
+Les tests exploratoires sont cadrés à l'aide de **chartes exploratoires**. 
+
+Ils visent à :
+- explorer les zones à risque
+- détecter des comportements inattendus
+- compléter les tests scriptés
+
+Les chartes sont documentées dans le fichier charters_exploratoires.md.
+
+## 8. Stratégie d'automatisation
+
+### 8.1 Objectifs
+- Automatiser les **parcours critiques**
+- Obtenir un feedback rapide sur la stabilité de l'application
+- Fournir des preuves exploitables en CI
+
+### 8.2 Smoke tests automatisés
+Le smoke automatisé est basé sur un sous-ensemble de cas de test prioritaires (H) afin de fournir un feedback rapide.
+Il a pour objectif de vérifier que l'application est :
+- accessible
+- utilisable sur ses fonctionnalités vitales
+
+Il inclut : 
+- **UI** :
+  - Connexion utilisateur
+  - Ajout au panier
+  - Accès au checkout
+- **API** : Récupération de la liste des produits
+
+Les tests smoke sont courts, stables et exécutables en CI.
+
+Si le smoke échoue, la campagne de tests s'arrête (go/no-go).
+
+Note : Le smoke automatisé est composé de cas de test prioritaires (H) les plus stables et représentatifs du parcours critique.
+
+### 8.3 Régression automatisée
+Une régression automatisée ciblée est prévue après stabilisation du smoke.
+- couverture élargie
+- scénarios positifs et négatifs
+- maintien de la traçabilité avec les CT-ID
+
+### 8.4 Critères de succès
+La stratégie de test est considérée comme efficace lorsque : 
+- le smoke automatisé (UI et API) est vert en exécution locale et en CI,
+- les tests smoke sont stables (absence de flaky identifié),
+- les preuves d'exécution sont disponibles (logs, captures, reporting),
+- la traçabilité entre exigences, cas de test et tests automatisés est maintenue.
+
+## 9. Environnement et exécution
+### 9.1 Exécution locale
+- Environnement : Windows
+- Outils : Maven, Java, navigateur Chrome
+- Paramétrage via variables d'environnement (`BASE_URL`, `API_BASE_URL`)
+
+### 9.2 Intégration continue (CI)
+- GitHub Actions
+- Exécution en environnement Linux 
+- Navigateur en mode headless via Selenium
+- Objectif : détecter rapidement les régressions
+
+## 10. Gestion des données de test
+- Données gérées à la volée lorsque nécessaire
+- Tests smoke conçus pour être **idempotents**
+- Pas de dépendance forte entre les tests
+
+## 11. Risques identifiés et mesures associées
+|Risque | Description | Mesure | 
+|------ | ----------- | ------- | 
+|R1 | Différences local / CI | Versions figées, exécution headless |
+|R2 | Instabilité du site tiers | Tests courts, ciblés |
+|R3 | Tests flaky | Attentes explicites, périmètre réduit |   
+|R4 | Données persistantes | Tests indépendants et nettoyables | 
+
+## 12. Traçabilité
+La traçabilité est assurée entre exigences, cas de test, exécutions et anomalies.
+À l'étape d'automatisation, les tests automatisés reprendront les CT-ID afin de maintenir ce lien.
+
+
+
+## 13. Évolution du projet
+Le projet est évolutif et pourra intégrer ultérieurement : 
+- Une couverture automatisée plus large
+- du reporting enrichi
+- d'autres types de tests (accessibilité, performance, sécurité)
+
+## 14. Glossaire
 - **CI (Continuous Integration)** : exécuter automatiquement les tests à chaque push (GitHub Actions) pour un feedback rapide.
 - **Smoke tests** : tests vitaux, très courts. S’ils échouent, on arrête.
 - **Headless** : navigateur sans interface (plus rapide/stable en CI).
@@ -38,3 +174,6 @@
 - **Idempotent** : rejouer le test ne change pas l’état (ex. GET, lecture de titre).
 - **Flaky** : test instable (passe/échoue sans changement de code). On limite ça avec des smokes simples, headless et une config propre.
 - **Mock** : faux service/API (ex. WireMock) pour stabiliser ou simuler des erreurs (utilisé plus tard).
+
+
+
