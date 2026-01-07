@@ -1,4 +1,4 @@
-package tests;
+package tests.smoke;
 
 import io.qameta.allure.*;
 import org.openqa.selenium.WebDriver;
@@ -16,7 +16,7 @@ import java.net.URL;
 @Feature("Accueil")
 @Story("Titre de la page")
 @Severity(SeverityLevel.NORMAL)
-public class HomeSmokeIT {
+public class HomeSmokeTest {
 
   WebDriver driver;
 
