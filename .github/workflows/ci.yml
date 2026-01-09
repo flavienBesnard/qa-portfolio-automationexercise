@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  api-smoke:
+    name: API Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Run API smoke
+        run: mvn -pl api-tests test -Dgroups=smoke
+
+      - name: Upload API Allure results (if any)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-api
+          path: api-tests/target/allure-results
+          if-no-files-found: ignore
+
+  ui-smoke:
+    name: UI Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: api-smoke
+    if: ${{ secrets.TEST_USER_EMAIL != '' && secrets.TEST_USER_PASSWORD != '' }}
+
+    env:
+      # Secrets (requis pour l'authentification)
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+      HEADLESS: "true"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Run UI smoke (headless)
+        run: mvn -pl ui-tests test -Dgroups=smoke
+
+
+      - name: Upload UI Allure results (if any)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-ui
+          path: ui-tests/target/allure-results
+          if-no-files-found: ignore

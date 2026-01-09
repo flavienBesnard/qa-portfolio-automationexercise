@@ -1,5 +1,5 @@
 # Maven/Java
-/target/
+**/target/
 !.mvn/wrapper/maven-wrapper.jar
 *.log
 # IDE

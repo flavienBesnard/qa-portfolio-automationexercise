@@ -1,4 +1,5 @@
-package tests.auth;
+package tests.cart;
 
 public class CartTests {
+    // TODO future regression
 }
