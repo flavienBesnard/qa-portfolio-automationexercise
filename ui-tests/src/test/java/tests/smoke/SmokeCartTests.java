@@ -27,8 +27,7 @@ public class SmokeCartTests extends BaseTest {
     CartPage cart = products.viewCartFromModal();
     // Vérification : on vérifie qu'il y a un article dans le panier et que la quantité est égale à 1
     assertThat(cart.hasAtLeastOneItem()).isTrue();
-    assertThat(cart.firstItemQuantity()).isEqualTo(1);
-
+    assertThat(cart.getQuantity("1")).isEqualTo(1);
 
 
 
