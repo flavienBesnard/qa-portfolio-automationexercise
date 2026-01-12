@@ -8,7 +8,7 @@ import java.time.Duration;
 public class ProductsPage extends BasePage {
     private static final By PRODUCTS_LIST = By.cssSelector(".features_items");
     private static final By VIEW_CART_LINK = By.cssSelector(".modal-body a[href=\"/view_cart\"]");
-
+    private static final By CONTINUE_SHOPPING_BTN = By.cssSelector(".btn.btn-success.close-modal.btn-block");
     public ProductsPage(WebDriver driver) {
         super(driver);
     }
@@ -41,6 +41,9 @@ private By addToCartByProductId(String productId) {
     return new CartPage(driver);
     }
 
+    public void ContinueShoppingFromModal() {
+        click(CONTINUE_SHOPPING_BTN);
+    }
 
 }
 

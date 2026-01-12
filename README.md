@@ -138,7 +138,6 @@ mvn test -Dgroups=smoke
 - Objectif : feedback rapide sur la stabilité de l'application
 - Job api-smoke : exécute le smoke API
 - Job ui-smoke : exécute le smoke UI en headless (uniquement si TEST_USER_EMAIL et TEST_USER_PASSWORD sont définis dans les Secrets GitHub)
-- Le job UI smoke est skippé si les secrets ne sont pas définis 
 
 Pour ajouter les secrets GitHub : Settings -> Secrets and variables -> Actions
 

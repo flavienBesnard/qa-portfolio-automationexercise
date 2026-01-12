@@ -21,7 +21,7 @@ public class SelectorDebugTests extends BaseTest {
         CartPage cart = products.viewCartFromModal();
 
         assertThat(cart.hasAtLeastOneItem()).isTrue();
-        assertThat(cart.firstItemQuantity()).isEqualTo(1);
+        assertThat(cart.getQuantity("1")).isEqualTo(1);
 
     }
 
