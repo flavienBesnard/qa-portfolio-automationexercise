@@ -34,7 +34,7 @@ public class NavTests extends BaseTest {
         ProductsPage products = home.goToProducts();
 
         // Vérification : isLoaded appel la liste des produits
-        assertThat(products.isLoaded()).isTrue();
+        products.assertLoaded();
     }
 
 }

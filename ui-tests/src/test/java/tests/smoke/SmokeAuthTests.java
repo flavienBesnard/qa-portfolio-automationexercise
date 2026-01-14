@@ -24,7 +24,7 @@ public class SmokeAuthTests extends BaseTest {
 
     @Test(groups = {"ui","auth","smoke"}, description = "CT-AUTH-001 / EX-02 / Login OK -> Connexion valide avec un compte existant")
 
-    public void login_With_Good_Credentials_Is_Ok() {
+    public void login_with_good_credentials_is_ok() {
 //Action : On va sur la page de login, et on se connecte avec les identifiants renseignés en variables d'environnement
     HomePage home = new HomePage(driver()).open();
     LoginPage login = home.goToLogin();

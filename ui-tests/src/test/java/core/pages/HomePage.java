@@ -3,7 +3,10 @@ package core.pages;
 import core.config.Config;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
@@ -24,6 +27,7 @@ public class HomePage extends BasePage {
    // private static final By CONSENT_DIALOG = By.cssSelector("div.fc-dialog-scrollable-content");
     //private static final By CONSENT_ACCEPT_BUTTON = By.cssSelector("button.fc-button fc-cta-consent fc-primary-button, button[aria-label=\"Autoriser\"]");
     private static final By PRODUCTS_LINK = By.cssSelector("a[href=\"/products\"]");
+    private static final By PRODUCTS_LIST = By.cssSelector(".features_items");
     public HomePage(WebDriver driver) {
         super(driver);
     }
@@ -45,17 +49,20 @@ public class HomePage extends BasePage {
  */
 
 public LoginPage goToLogin() {
-    click(LOGIN_LINK);
+    clickAndWaitUrlContainsFast(LOGIN_LINK,"/login");
     return new LoginPage(driver);
 }
 
-public ProductsPage goToProducts() {
-    click(PRODUCTS_LINK);
-    return new ProductsPage(driver);
-}
+    public ProductsPage goToProducts() {
+
+        clickAndWaitUrlContainsFast(PRODUCTS_LINK,"/products");
+        return new ProductsPage(driver);
+    }
+
+
 
     public CartPage goToCart() {
-        click(CART_LINK);
+        clickAndWaitUrlContainsFast(CART_LINK,"/view_cart");
         return new CartPage(driver);
     }
 
