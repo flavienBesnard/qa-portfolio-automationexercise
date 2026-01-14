@@ -44,6 +44,15 @@ public class CartPage extends BasePage {
         new WebDriverWait(driver, Duration.ofSeconds(8)).until(ExpectedConditions.invisibilityOfElementLocated(productRow));
     }
 
+    public void clearCart() {
+        assertLoaded();
+        for (String id : getProductIds()) {
+            deleteItemToCartByProductId(id);
+        }
+        dismissGoogleVignetteIfPresent();
+        // new WebDriverWait(driver,Duration.ofSeconds(8)).until(d -> productCount() ==0);
+    }
+
     public int productCount() {
         assertLoaded();
         return driver.findElements(CART_ROWS).size();
@@ -74,24 +83,28 @@ public class CartPage extends BasePage {
         assertLoaded();
         WebElement row = driver.findElement(By.cssSelector("tr[id=\"product-" + productId + "\"]"));
         WebElement qtyEl = row.findElement(By.cssSelector("td.cart_quantity button.disabled"));
-       String text = qtyEl.getText().trim();
-       if (text.isEmpty()) {
+        String text = qtyEl.getText().trim();
+
+        /*
+        sur button la quantité est dans le texte -> getText()
+        Sur input la valeur est dans l'attribut value
+        si getText vide, on lit l'attribut value pour éviter une casse si le composant button change en input
+         */
+        if (text.isEmpty()) {
            String value = qtyEl.getAttribute("value");
            text = (value != null) ? value.trim() : "";
-       }
-       return Integer.parseInt(text.replaceAll("\\D+", ""));
+        }
+        return Integer.parseInt(text.replaceAll("\\D+", ""));
         }
 
-
-        public Map<String, Integer> getQuantitiesByProductId() {
+    public Map<String, Integer> getQuantitiesByProductId() {
         assertLoaded();
         Map<String, Integer> map = new LinkedHashMap<>();
         for (String id : getProductIds()) {
             map.put(id, getQuantity(id));
         }
         return map;
-        }
-
+    }
 
 
 

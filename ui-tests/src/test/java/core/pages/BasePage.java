@@ -3,6 +3,7 @@ package core.pages;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.time.Duration;
 import java.util.List;
 /**
@@ -31,7 +32,9 @@ public abstract class BasePage {
     protected WebElement visible(By locator) {
         return new WebDriverWait(driver,DEFAULT_TIMEOUT).until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
+
     protected WebElement clickable(By locator) {
+        dismissGoogleVignetteIfPresent();
 
         return new WebDriverWait(driver,DEFAULT_TIMEOUT).until(ExpectedConditions.elementToBeClickable(locator));
     }
@@ -66,16 +69,79 @@ public abstract class BasePage {
     }
 
 
+    protected boolean dismissGoogleVignetteIfPresent() {
+        try {
+            String href = (String) ((JavascriptExecutor) driver)
+                    .executeScript("return window.location.href");
 
+            if (href == null || !href.contains("google_vignette")) return false;
 
-    // on recharge la même URL sans #google_vignette pour retrouver la page normale
-    protected void dismissGoogleVignetteIfPresent() {
-        String url = driver.getCurrentUrl();
-        if(url != null && url.contains("#google_vignette")) {
-            driver.get(url.replace("#google_vignette",""));
+            // Nettoyage hash sans reload
+            ((JavascriptExecutor) driver).executeScript("""
+            const href = window.location.href;
+            if (!href.includes('google_vignette')) return;
+            const clean = href.split('#')[0];
+            history.replaceState(null, '', clean);
+        """);
+
+            // Best effort: enlever les overlays
+            dismissAdOverlaysBestEffort();
+
+            // Resync "on reprend la main"
+            driver.switchTo().defaultContent();
+            waitForDomStable();
+            return true;
+
+        } catch (Exception ignored) {
+            return false;
         }
-
     }
+
+    protected void waitForDomStable() {
+        try {
+            new WebDriverWait(driver, SHORT_TIMEOUT).until(d -> {
+                try {
+                    String rs = (String) ((JavascriptExecutor) d).executeScript("return document.readyState");
+                    return "interactive".equals(rs) || "complete".equals(rs);
+                } catch (Exception e) {
+                    return true; // best effort
+                }
+            });
+
+            new WebDriverWait(driver, SHORT_TIMEOUT).until(d -> {
+                try {
+                    String href = (String) ((JavascriptExecutor) d).executeScript("return window.location.href");
+                    return href == null || !href.contains("google_vignette");
+                } catch (Exception e) {
+                    return true;
+                }
+            });
+        } catch (TimeoutException ignored) {}
+    }
+
+    protected void dismissAdOverlaysBestEffort() {
+        try {
+            ((JavascriptExecutor) driver).executeScript("""
+            const selectors = [
+              "iframe[id^='aswift_']",
+              "iframe[id^='google_ads_iframe']",
+              "iframe[src*='googleads']",
+              "iframe[src*='doubleclick']",
+              "ins.adsbygoogle"
+            ];
+            selectors.forEach(sel => document.querySelectorAll(sel).forEach(el => {
+              el.style.display='none';
+              el.style.visibility='hidden';
+              el.style.pointerEvents='none';
+              try { el.remove(); } catch(e) {}
+            }));
+        """);
+        } catch (Exception ignored) {}
+    }
+
+
+
+
 
 
     /**
@@ -101,8 +167,87 @@ w.until(ExpectedConditions.invisibilityOfElementLocated(consent_dialog));
         }
     }
 
+    /**
+     * Solution contre le google_vignette qui faisait dysfonctionner les tests
+     * @param locator
+     * @param expectedUrlPart
+     */
+    protected void clickAndWaitUrlContainsFast(By locator, String expectedUrlPart) {
+        String before = currentHrefSafe();
 
+        for (int attempt = 1; attempt <= 2; attempt++) {
+            // pre-clean
+            dismissConsentIfPresent();
+            dismissGoogleVignetteIfPresent();
+           // dismissAdOverlaysBestEffort();
 
+            // click
+            WebElement el = clickable(locator);
+            scrollIntoViewCentered(el);
+
+            try {
+                el.click();
+            } catch (Exception e) {
+                // click intercepté => clean + retry
+                dismissGoogleVignetteIfPresent();
+            //    dismissAdOverlaysBestEffort();
+                if (attempt == 2) throw e;
+                continue;
+            }
+
+            // ÉTAPE 1 : attendre TRÈS court que "quelque chose" se passe (URL change)
+            boolean started = waitUrlChangeOrContains(before, expectedUrlPart, Duration.ofMillis(1200));
+            if (!started) {
+                // navigation n'a pas démarré => probablement bloqué par vignette/overlay
+                dismissGoogleVignetteIfPresent();
+              //  dismissAdOverlaysBestEffort();
+                if (attempt == 2) {
+                    throw new org.openqa.selenium.TimeoutException(
+                            "La navigation n'a pas commencé après le click (bloqué par google_vignette ou overlay)");
+                }
+                continue;
+            }
+
+            // ÉTAPE 2 : navigation démarrée => wait normal mais plus court qu'un timeout global
+            waitUntilUrlContains(expectedUrlPart, Duration.ofSeconds(6));
+            return;
+        }
+    }
+
+    private boolean waitUrlChangeOrContains(String before, String expectedPart, Duration timeout) {
+        try {
+            WebDriverWait w = new WebDriverWait(driver, timeout);
+            w.pollingEvery(Duration.ofMillis(150));
+            return w.until(d -> {
+                dismissGoogleVignetteIfPresent();
+              //  dismissAdOverlaysBestEffort();
+                String now = currentHrefSafe();
+                if (now == null) return false;
+                return (expectedPart != null && now.contains(expectedPart)) || (before != null && !now.equals(before));
+            });
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
+    private void waitUntilUrlContains(String expectedPart, Duration timeout) {
+        WebDriverWait w = new WebDriverWait(driver, timeout);
+        w.pollingEvery(Duration.ofMillis(200));
+        w.until(d -> {
+            dismissGoogleVignetteIfPresent();
+          //  dismissAdOverlaysBestEffort();
+            String now = currentHrefSafe();
+            return now != null && now.contains(expectedPart);
+        });
+    }
+
+    private String currentHrefSafe() {
+        try {
+            return (String) ((JavascriptExecutor) driver).executeScript("return window.location.href");
+        } catch (Exception e) {
+            return driver.getCurrentUrl();
+        }
+    }
 
     /**
      *  click standard
@@ -116,22 +261,26 @@ w.until(ExpectedConditions.invisibilityOfElementLocated(consent_dialog));
 
 try {
 
-      dismissGoogleVignetteIfPresent();
-        WebElement el = clickable(locator);
-        scrollIntoViewCentered(el);
-            el.click();
-            return;
-        } catch (StaleElementReferenceException | ElementClickInterceptedException first) {
+    dismissGoogleVignetteIfPresent();
+    WebElement el = clickable(locator);
+    scrollIntoViewCentered(el);
+    dismissGoogleVignetteIfPresent();
+    el.click();
+
+} catch (StaleElementReferenceException | ElementClickInterceptedException | org.openqa.selenium.TimeoutException e) {
+
     // un seul retry
     dismissGoogleVignetteIfPresent();
     WebElement el = clickable(locator);
     scrollIntoViewCentered(el);
     el.click();
-    return;
-}
+
+     }
 
 
 }
+
+
 
 
 
@@ -142,8 +291,6 @@ try {
     protected String title() {
         return driver.getTitle();
     }
-
-
 
 
 

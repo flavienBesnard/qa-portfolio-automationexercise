@@ -5,6 +5,7 @@ import core.pages.*;
 import flows.AuthFlow;
 import org.testng.annotations.Test;
 
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,6 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CartTests extends BaseTest {
-    // TODO future regression
 
     /**
      * CT-ID : CT-CART-004
@@ -36,7 +36,7 @@ public class CartTests extends BaseTest {
         ProductsPage products = home.goToProducts();
         String removeId = "1";
         products.addProductToCartById("1");
-        products.ContinueShoppingFromModal();
+        products.continueShoppingFromModal();
         products.addProductToCartById("2");
        CartPage cart =  products.viewCartFromModal();
         assertThat(cart.productCount()).isGreaterThan(1);
@@ -62,4 +62,46 @@ public class CartTests extends BaseTest {
 
 
     }
+
+
+    /**
+     * CT-ID : CT-CART-002
+     * EX-ID : EX-17
+     *
+     * Objectif : Total du panier calculé correctement
+     * Critères de réussite :   - Pour chaque ligne, le sous-total = prix unitaire*quantité
+     *                          - Le total général du panier = somme de tous les sous-totaux des produits
+     *                          - Aucun comportement inattendu n'est observé
+     *
+     * Préconditions : 1. Utilisateur connecté
+     *                 2. Panier vide au démarrage
+     *
+     * Note stabilité : - Test exécuté sur un site public (pubs/overlays possibles) --> mécanisme de contournement présent dans le code
+     */
+    @Test(groups = {"ui","cart","regression"}, description = "CT-CART-002 / EX-17 / Total du panier calculé correctement")
+    public void cart_total_is_correct() {
+        // Préconditions
+        HomePage home = AuthFlow.loginAsTestUser(driver());
+        CartPage cart =  home.goToCart();
+        cart.clearCart();
+        // Action
+        ProductsPage products = home.goToProducts();
+       // products.assertLoaded();
+        products.addProductToCartById("1");
+        products.continueShoppingFromModal();
+        products.addProductToCartById("1");
+        products.continueShoppingFromModal();
+        products.addProductToCartById("2");
+        cart = products.viewCartFromModal();
+        CheckoutPage checkout = cart.proceedToCheckout();
+        BigDecimal expectedTotal = checkout.totalCartExpected();
+        BigDecimal actualTotalCart = checkout.totalCart();
+        // Vérifications
+        assertThat(expectedTotal).isEqualByComparingTo(actualTotalCart);
+        checkout.assertUnitPriceMultiplyByQuantityEqualTotalLine();
+
+
+
+    }
+
 }

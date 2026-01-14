@@ -6,6 +6,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,7 +35,6 @@ public class DriverFactory {
         prefs.put("profile.password_manager_leak_detection", false);
         options.setExperimentalOption("prefs", prefs);
         options.addArguments("--guest");
-
         if (Config.headless()) {
             options.addArguments("--headless=new");
         }
