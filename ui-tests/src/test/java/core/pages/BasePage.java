@@ -18,7 +18,8 @@ public abstract class BasePage {
 
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration SHORT_TIMEOUT = Duration.ofSeconds(2);
-
+    private static final By CONSENT_DIALOG = By.cssSelector(".fc-dialog-container");
+    private static final By CONSENT_ACCEPT_BTN = By.cssSelector("button.fc-button.fc-cta-consent.fc-primary-button, button[aria-label=\"Autoriser\"]");
     protected BasePage(WebDriver driver) {
         this.driver = driver;
 
@@ -34,7 +35,6 @@ public abstract class BasePage {
     }
 
     protected WebElement clickable(By locator) {
-        dismissGoogleVignetteIfPresent();
 
         return new WebDriverWait(driver,DEFAULT_TIMEOUT).until(ExpectedConditions.elementToBeClickable(locator));
     }
@@ -59,42 +59,53 @@ public abstract class BasePage {
     }
 
 // --- SCROLL ---
-    protected void scrollIntoViewCentered(WebElement el) {
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center', inline:'nearest'});", el);
-    }
+protected void scrollIntoViewCentered(WebElement el) {
+    try {
+        JavascriptExecutor js = (JavascriptExecutor) driver;
 
-    protected void scrollIntoViewCentered(By locator) {
-        WebElement el = visible(locator);
-        scrollIntoViewCentered(el);
-    }
+        Boolean inView = (Boolean) js.executeScript("""
+            const r = arguments[0].getBoundingClientRect();
+            const vh = window.innerHeight || document.documentElement.clientHeight;
+            return r.top >= 0 && r.bottom <= vh;
+        """, el);
+
+        if (Boolean.TRUE.equals(inView)) return;
+
+        js.executeScript("""
+            arguments[0].scrollIntoView({block:'center', inline:'nearest'});
+            // compense un header sticky éventuel (ajuste -80 si besoin)
+            window.scrollBy(0, -80);
+        """, el);
+
+    } catch (Exception ignored) {}
+}
 
 
-    protected boolean dismissGoogleVignetteIfPresent() {
+    protected boolean dismissGoogleVignetteLight() {
         try {
-            String href = (String) ((JavascriptExecutor) driver)
-                    .executeScript("return window.location.href");
-
+            String href = (String) ((JavascriptExecutor) driver).executeScript("return window.location.href");
             if (href == null || !href.contains("google_vignette")) return false;
 
-            // Nettoyage hash sans reload
             ((JavascriptExecutor) driver).executeScript("""
-            const href = window.location.href;
-            if (!href.includes('google_vignette')) return;
-            const clean = href.split('#')[0];
-            history.replaceState(null, '', clean);
+          const href = window.location.href;
+          if (!href.includes('google_vignette')) return;
+          const clean = href.split('#')[0];
+          history.replaceState(null, '', clean);
         """);
 
-            // Best effort: enlever les overlays
             dismissAdOverlaysBestEffort();
+            driver.switchTo().defaultContent();
+            return true;
+        } catch (Exception ignored) { return false; }
+    }
 
-            // Resync "on reprend la main"
+    protected boolean dismissGoogleVignetteIfPresent() {
+        boolean cleaned = dismissGoogleVignetteLight();
+        if (cleaned) {
             driver.switchTo().defaultContent();
             waitForDomStable();
-            return true;
-
-        } catch (Exception ignored) {
-            return false;
         }
+        return cleaned;
     }
 
     protected void waitForDomStable() {
@@ -150,17 +161,14 @@ public abstract class BasePage {
      */
     protected void dismissConsentIfPresent() {
 
-        By consent_dialog = By.cssSelector(".fc-dialog-container");
-        By consent_accept_button = By.cssSelector("button.fc-button.fc-cta-consent.fc-primary-button, button[aria-label=\"Autoriser\"]");
-
-if (driver.findElements(consent_dialog).isEmpty()) {
+if (driver.findElements(CONSENT_DIALOG).isEmpty()) {
     return;
 }
         try {
     WebDriverWait w = new WebDriverWait(driver, SHORT_TIMEOUT);
-    WebElement btn = w.until(ExpectedConditions.elementToBeClickable(consent_accept_button));
+    WebElement btn = w.until(ExpectedConditions.elementToBeClickable(CONSENT_ACCEPT_BTN));
     btn.click();
-w.until(ExpectedConditions.invisibilityOfElementLocated(consent_dialog));
+w.until(ExpectedConditions.invisibilityOfElementLocated(CONSENT_DIALOG));
 
         } catch (RuntimeException ignored) {
 
@@ -173,44 +181,55 @@ w.until(ExpectedConditions.invisibilityOfElementLocated(consent_dialog));
      * @param expectedUrlPart
      */
     protected void clickAndWaitUrlContainsFast(By locator, String expectedUrlPart) {
-        String before = currentHrefSafe();
 
         for (int attempt = 1; attempt <= 2; attempt++) {
+
             // pre-clean
-            dismissConsentIfPresent();
-            dismissGoogleVignetteIfPresent();
-           // dismissAdOverlaysBestEffort();
+            dismissGoogleVignetteLight();
+
+            // IMPORTANT: before APRÈS pre-clean
+            String before = currentHrefSafe();
 
             // click
             WebElement el = clickable(locator);
             scrollIntoViewCentered(el);
 
             try {
-                el.click();
+                safeClick(el);
             } catch (Exception e) {
-                // click intercepté => clean + retry
                 dismissGoogleVignetteIfPresent();
-            //    dismissAdOverlaysBestEffort();
                 if (attempt == 2) throw e;
                 continue;
             }
 
-            // ÉTAPE 1 : attendre TRÈS court que "quelque chose" se passe (URL change)
+            // étape 1: fail fast (nav démarre ?)
             boolean started = waitUrlChangeOrContains(before, expectedUrlPart, Duration.ofMillis(1200));
             if (!started) {
-                // navigation n'a pas démarré => probablement bloqué par vignette/overlay
                 dismissGoogleVignetteIfPresent();
-              //  dismissAdOverlaysBestEffort();
                 if (attempt == 2) {
-                    throw new org.openqa.selenium.TimeoutException(
-                            "La navigation n'a pas commencé après le click (bloqué par google_vignette ou overlay)");
+                    throw new TimeoutException("Navigation non démarrée après click (probablement click bloqué / scroll / overlay).");
                 }
                 continue;
             }
 
-            // ÉTAPE 2 : navigation démarrée => wait normal mais plus court qu'un timeout global
-            waitUntilUrlContains(expectedUrlPart, Duration.ofSeconds(6));
-            return;
+            // étape 2: atteindre la cible (retry si timeout)
+            try {
+                waitUntilUrlContains(expectedUrlPart, Duration.ofSeconds(6));
+                return;
+            } catch (TimeoutException e) {
+                if (attempt == 2) throw e;
+                // retry
+            }
+        }
+    }
+
+
+    protected void safeClick(WebElement el) {
+        try {
+            el.click();
+        } catch (Exception e) {
+            // fallback JS (utile si overlay léger, sticky header, etc.)
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", el);
         }
     }
 
@@ -219,8 +238,7 @@ w.until(ExpectedConditions.invisibilityOfElementLocated(consent_dialog));
             WebDriverWait w = new WebDriverWait(driver, timeout);
             w.pollingEvery(Duration.ofMillis(150));
             return w.until(d -> {
-                dismissGoogleVignetteIfPresent();
-              //  dismissAdOverlaysBestEffort();
+                dismissGoogleVignetteLight();
                 String now = currentHrefSafe();
                 if (now == null) return false;
                 return (expectedPart != null && now.contains(expectedPart)) || (before != null && !now.equals(before));
@@ -234,8 +252,7 @@ w.until(ExpectedConditions.invisibilityOfElementLocated(consent_dialog));
         WebDriverWait w = new WebDriverWait(driver, timeout);
         w.pollingEvery(Duration.ofMillis(200));
         w.until(d -> {
-            dismissGoogleVignetteIfPresent();
-          //  dismissAdOverlaysBestEffort();
+            dismissGoogleVignetteLight();
             String now = currentHrefSafe();
             return now != null && now.contains(expectedPart);
         });
@@ -261,19 +278,19 @@ w.until(ExpectedConditions.invisibilityOfElementLocated(consent_dialog));
 
 try {
 
-    dismissGoogleVignetteIfPresent();
+    dismissGoogleVignetteLight();
     WebElement el = clickable(locator);
     scrollIntoViewCentered(el);
-    dismissGoogleVignetteIfPresent();
-    el.click();
+    safeClick(el);
+
 
 } catch (StaleElementReferenceException | ElementClickInterceptedException | org.openqa.selenium.TimeoutException e) {
-
+    System.out.println("le click passe au catch");
     // un seul retry
     dismissGoogleVignetteIfPresent();
     WebElement el = clickable(locator);
     scrollIntoViewCentered(el);
-    el.click();
+    safeClick(el);
 
      }
 

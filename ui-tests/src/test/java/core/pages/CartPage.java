@@ -26,7 +26,7 @@ public class CartPage extends BasePage {
     }
     public boolean hasAtLeastOneItem() {
         assertLoaded();
-        return driver.findElements(CART_ROWS).size() > 0;
+        return !driver.findElements(CART_ROWS).isEmpty();
     }
 
 

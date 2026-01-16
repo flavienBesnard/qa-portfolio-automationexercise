@@ -50,20 +50,28 @@ public class HomePage extends BasePage {
 
 public LoginPage goToLogin() {
     clickAndWaitUrlContainsFast(LOGIN_LINK,"/login");
-    return new LoginPage(driver);
+   LoginPage login = new LoginPage(driver);
+   login.assertLoaded();
+   return login;
+    // return new LoginPage(driver);
 }
 
     public ProductsPage goToProducts() {
 
         clickAndWaitUrlContainsFast(PRODUCTS_LINK,"/products");
-        return new ProductsPage(driver);
+        ProductsPage products = new ProductsPage(driver);
+        products.assertLoaded();
+        return products;
     }
 
 
 
     public CartPage goToCart() {
         clickAndWaitUrlContainsFast(CART_LINK,"/view_cart");
-        return new CartPage(driver);
+        //return new CartPage(driver);
+        CartPage cart = new CartPage(driver);
+        cart.assertLoaded();
+        return cart;
     }
 
 // si logout visible, alors l'utilisateur est connecté
