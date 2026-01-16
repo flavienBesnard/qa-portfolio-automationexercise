@@ -35,9 +35,6 @@ public class LoginTests extends BaseTest {
         HomePage home = new HomePage(driver()).open();
 
         LoginPage login = home.goToLogin();
-        assertThat(login.isLoaded())
-                .as("La page de login doit être chargé")
-                .isTrue();
         login.login("emailInvalide@exemple.com","mdp_faux");
 
         assertThat(login.isInvalidCredentialsErrorVisible())

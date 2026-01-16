@@ -21,16 +21,21 @@ public class LoginPage extends BasePage {
     public LoginPage(WebDriver driver) {
         super(driver);
     }
-    public boolean isLoaded() {
+
+    public void assertLoaded() {
         visible(EMAIL_INPUT);
         visible(PASSWORD_INPUT);
-        return true;
+        System.out.println("[STEP] assert loaded effectué");
+
     }
 
-
 public void login(String email, String password) {
+        assertLoaded();
+    System.out.println("[STEP] goToLogin()");
     var emailInput = visible(EMAIL_INPUT);
+    System.out.println("[STEP] emailInput initialisé");
     emailInput.clear();
+    System.out.println("[STEP] emailInput clear");
     emailInput.sendKeys(email);
 
     var passwordInput = visible(PASSWORD_INPUT);
@@ -43,7 +48,7 @@ public void login(String email, String password) {
 
 
 public boolean isInvalidCredentialsErrorVisible() {
-
+        assertLoaded();
         return isVisible(INVALID_CREDS_ERROR, Duration.ofSeconds(2));
 }
 

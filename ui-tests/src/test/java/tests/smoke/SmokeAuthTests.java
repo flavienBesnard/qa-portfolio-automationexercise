@@ -28,9 +28,6 @@ public class SmokeAuthTests extends BaseTest {
 //Action : On va sur la page de login, et on se connecte avec les identifiants renseignés en variables d'environnement
     HomePage home = new HomePage(driver()).open();
     LoginPage login = home.goToLogin();
-    assertThat(login.isLoaded())
-            .as("la page de login est chargée")
-            .isTrue();
 
     login.login(Config.testUserEmail(),Config.testUserPassword());
 
