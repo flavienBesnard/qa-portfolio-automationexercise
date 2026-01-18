@@ -55,9 +55,6 @@ public AccountInformationPage signup(String name,String email){
 
 }
 
-public void signupInformation() {
-
-}
 
 public boolean isInvalidCredentialsErrorVisible() {
         assertLoaded();

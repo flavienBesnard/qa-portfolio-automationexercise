@@ -98,7 +98,6 @@ private void selectWithLocatorAndValue(By locator, String value){
     public AccountCreatedPage submitCreateAccount() {
         assertLoaded();
         clickAndWaitUrlContainsFast(CREATE_ACCOUNT_BTN,"/account_created");
-       // click(CREATE_ACCOUNT_BTN);
         return new AccountCreatedPage(driver);
     }
 }

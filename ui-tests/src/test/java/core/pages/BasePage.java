@@ -267,14 +267,54 @@ w.until(ExpectedConditions.invisibilityOfElementLocated(CONSENT_DIALOG));
         }
     }
 
+
+
+    protected void clickAndWaitVisibleFast(By clickLocator, By marker, Duration timeout) {
+        for (int attempt = 1; attempt <= 2; attempt++) {
+
+            // pre-clean
+            dismissConsentIfPresent();
+            dismissGoogleVignetteLight();
+            dismissAdOverlaysBestEffort();
+
+            // click (ton click() a déjà 1 retry + JS fallback)
+            click(clickLocator);
+
+            // wait marker (avec nettoyage pendant l'attente)
+            boolean ok = waitVisibleWithCleanup(marker, timeout);
+            if (ok) return;
+
+            // retry heavy si ça n'a pas marché
+            dismissGoogleVignetteIfPresent();
+            dismissAdOverlaysBestEffort();
+
+            if (attempt == 2) {
+                throw new TimeoutException("Home marker not visible after click: " + marker);
+            }
+        }
+    }
+
+    protected boolean waitVisibleWithCleanup(By marker, Duration timeout) {
+        try {
+            WebDriverWait w = new WebDriverWait(driver, timeout);
+            w.pollingEvery(Duration.ofMillis(200));
+            return w.until(d -> {
+                dismissGoogleVignetteLight();
+                dismissAdOverlaysBestEffort();
+                dismissConsentIfPresent();
+                List<WebElement> els = d.findElements(marker);
+                return !els.isEmpty() && els.get(0).isDisplayed();
+            });
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
     /**
      *  click standard
      *  Permet de contourner les vignettes de pub google si elles sont présentes (#google_vignette).
      *  Si le clic n'a pas fonctionné on nettoie puis on réessaie.
      *
      */
-
-
     protected void click(By locator) {
 
 try {
@@ -306,8 +346,9 @@ try {
     }
 
     public HomePage goToHome() {
-        click(HOME_LINK);
+      //  click(HOME_LINK);
         //clickAndWaitUrlContainsFast(HOME_LINK,"/");
+        clickAndWaitVisibleFast(HOME_LINK, HomePage.HOME_CAROUSEL,Duration.ofSeconds(8));
         HomePage home = new HomePage(driver);
         home.assertLoaded();
         return home;

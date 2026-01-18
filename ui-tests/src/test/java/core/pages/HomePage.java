@@ -32,7 +32,7 @@ public class HomePage extends BasePage {
     private static final By PRODUCTS_LINK = By.cssSelector("a[href=\"/products\"]");
     private static final By PRODUCTS_LIST = By.cssSelector(".features_items");
     private static final By DELETE_ACCOUNT_LINK = By.cssSelector("a[href=\"/delete_account\"]");
-    private static final By CAROUSEL = By.cssSelector(".carousel.slide");
+    public static final By HOME_CAROUSEL = By.cssSelector("#slider-carousel");
     private static final By LOGGED_NAME = By.xpath("//a[i[contains(@class,'fa-user')]]/b");
     public HomePage(WebDriver driver) {
         super(driver);
@@ -51,7 +51,7 @@ public class HomePage extends BasePage {
     }
 
     public void assertLoaded() {
-        visible(CAROUSEL);
+        visible(HOME_CAROUSEL);
     }
 /**
  * Navigation : aller sur la page login

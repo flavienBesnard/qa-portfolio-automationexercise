@@ -32,7 +32,7 @@ public final class SignupDataFactory {
                 faker.address().state(),
                 faker.address().city(),
                 faker.address().zipCode(),
-                faker.number().digits(10)
+                "06" + faker.number().digits(8)
 
 
 
