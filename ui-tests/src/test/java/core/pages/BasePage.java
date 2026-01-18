@@ -20,6 +20,7 @@ public abstract class BasePage {
     private static final Duration SHORT_TIMEOUT = Duration.ofSeconds(2);
     private static final By CONSENT_DIALOG = By.cssSelector(".fc-dialog-container");
     private static final By CONSENT_ACCEPT_BTN = By.cssSelector("button.fc-button.fc-cta-consent.fc-primary-button, button[aria-label=\"Autoriser\"]");
+    private static final By HOME_LINK = By.cssSelector(".shop-menu.pull-right a[href=\"/\"]");
     protected BasePage(WebDriver driver) {
         this.driver = driver;
 
@@ -285,7 +286,6 @@ try {
 
 
 } catch (StaleElementReferenceException | ElementClickInterceptedException | org.openqa.selenium.TimeoutException e) {
-    System.out.println("le click passe au catch");
     // un seul retry
     dismissGoogleVignetteIfPresent();
     WebElement el = clickable(locator);
@@ -298,9 +298,20 @@ try {
 }
 
 
+    public void clearAndSendKeys(By locator, String value) {
+        if (value==null) throw new IllegalArgumentException("la valeur ne doit pas être nulle");
+        WebElement el = visible(locator);
+        el.clear();
+        el.sendKeys(value);
+    }
 
-
-
+    public HomePage goToHome() {
+        click(HOME_LINK);
+        //clickAndWaitUrlContainsFast(HOME_LINK,"/");
+        HomePage home = new HomePage(driver);
+        home.assertLoaded();
+        return home;
+    }
 
 
 
