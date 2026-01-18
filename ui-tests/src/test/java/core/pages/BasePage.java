@@ -20,6 +20,7 @@ public abstract class BasePage {
     private static final Duration SHORT_TIMEOUT = Duration.ofSeconds(2);
     private static final By CONSENT_DIALOG = By.cssSelector(".fc-dialog-container");
     private static final By CONSENT_ACCEPT_BTN = By.cssSelector("button.fc-button.fc-cta-consent.fc-primary-button, button[aria-label=\"Autoriser\"]");
+    private static final By HOME_LINK = By.cssSelector(".shop-menu.pull-right a[href=\"/\"]");
     protected BasePage(WebDriver driver) {
         this.driver = driver;
 
@@ -266,14 +267,54 @@ w.until(ExpectedConditions.invisibilityOfElementLocated(CONSENT_DIALOG));
         }
     }
 
+
+
+    protected void clickAndWaitVisibleFast(By clickLocator, By marker, Duration timeout) {
+        for (int attempt = 1; attempt <= 2; attempt++) {
+
+            // pre-clean
+            dismissConsentIfPresent();
+            dismissGoogleVignetteLight();
+            dismissAdOverlaysBestEffort();
+
+            // click (ton click() a déjà 1 retry + JS fallback)
+            click(clickLocator);
+
+            // wait marker (avec nettoyage pendant l'attente)
+            boolean ok = waitVisibleWithCleanup(marker, timeout);
+            if (ok) return;
+
+            // retry heavy si ça n'a pas marché
+            dismissGoogleVignetteIfPresent();
+            dismissAdOverlaysBestEffort();
+
+            if (attempt == 2) {
+                throw new TimeoutException("Home marker not visible after click: " + marker);
+            }
+        }
+    }
+
+    protected boolean waitVisibleWithCleanup(By marker, Duration timeout) {
+        try {
+            WebDriverWait w = new WebDriverWait(driver, timeout);
+            w.pollingEvery(Duration.ofMillis(200));
+            return w.until(d -> {
+                dismissGoogleVignetteLight();
+                dismissAdOverlaysBestEffort();
+                dismissConsentIfPresent();
+                List<WebElement> els = d.findElements(marker);
+                return !els.isEmpty() && els.get(0).isDisplayed();
+            });
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
     /**
      *  click standard
      *  Permet de contourner les vignettes de pub google si elles sont présentes (#google_vignette).
      *  Si le clic n'a pas fonctionné on nettoie puis on réessaie.
      *
      */
-
-
     protected void click(By locator) {
 
 try {
@@ -285,7 +326,6 @@ try {
 
 
 } catch (StaleElementReferenceException | ElementClickInterceptedException | org.openqa.selenium.TimeoutException e) {
-    System.out.println("le click passe au catch");
     // un seul retry
     dismissGoogleVignetteIfPresent();
     WebElement el = clickable(locator);
@@ -298,9 +338,21 @@ try {
 }
 
 
+    public void clearAndSendKeys(By locator, String value) {
+        if (value==null) throw new IllegalArgumentException("la valeur ne doit pas être nulle");
+        WebElement el = visible(locator);
+        el.clear();
+        el.sendKeys(value);
+    }
 
-
-
+    public HomePage goToHome() {
+      //  click(HOME_LINK);
+        //clickAndWaitUrlContainsFast(HOME_LINK,"/");
+        clickAndWaitVisibleFast(HOME_LINK, HomePage.HOME_CAROUSEL,Duration.ofSeconds(8));
+        HomePage home = new HomePage(driver);
+        home.assertLoaded();
+        return home;
+    }
 
 
 
