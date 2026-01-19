@@ -55,6 +55,15 @@ public abstract class BasePage {
         }
     }
 
+    protected boolean isVisible(By locator) {
+        try {
+            new WebDriverWait(driver, SHORT_TIMEOUT).until(ExpectedConditions.visibilityOfElementLocated(locator));
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
     protected List<WebElement> all(By locator) {
         return driver.findElements(locator);
     }

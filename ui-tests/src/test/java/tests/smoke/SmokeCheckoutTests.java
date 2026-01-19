@@ -33,7 +33,7 @@ public class SmokeCheckoutTests extends BaseTest {
         CheckoutPage checkout = cart.proceedToCheckout();
         PaymentPage payment = checkout.placeOrder();
         // Vérification : preuve de succès = formulaire de paiement visible (EX-19)
-        assertThat(payment.hasPaymentForm()).isTrue();
+        payment.assertPaymentFormVisible();
 
 
 

@@ -17,9 +17,7 @@ public class AuthFlow {
  */
     public static HomePage loginAsTestUser(WebDriver driver) {
         HomePage home = new HomePage(driver).open();
-        System.out.println("[STEP] open");
         LoginPage login = home.goToLogin();
-        System.out.println("[STEP] goToLogin()");
         login.login(Config.testUserEmail(),Config.testUserPassword());
         return home;
     }
