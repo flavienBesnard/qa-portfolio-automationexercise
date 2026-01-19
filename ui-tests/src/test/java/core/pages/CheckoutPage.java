@@ -1,5 +1,6 @@
 package core.pages;
 
+import core.data.SignupData;
 import org.openqa.selenium.*;
 
 import java.math.BigDecimal;
@@ -13,6 +14,8 @@ public class CheckoutPage extends BasePage {
     private static final By BTN_PLACE_ORDER = By.cssSelector(".btn.btn-default.check_out");
     private static final By CART_ROWS = By.cssSelector(".table.table-condensed tbody tr[id^='product-']");
     private static final By TOTAL_CART = By.xpath("//b[normalize-space()='Total Amount']/ancestor::tr//p[contains(@class,'cart_total_price')]");
+    private static final By ADDRESS_DELIVERY = By.id("address_delivery");
+    private static final By ADDRESS_INVOICE = By.id("address_invoice");
     public CheckoutPage(WebDriver driver) {
         super(driver);
     }
@@ -27,8 +30,10 @@ public class CheckoutPage extends BasePage {
      */
     public PaymentPage placeOrder() {
         assertLoaded();
-    click(BTN_PLACE_ORDER);
-    return new PaymentPage(driver);
+        click(BTN_PLACE_ORDER);
+        PaymentPage payment = new PaymentPage(driver);
+        payment.assertLoaded();
+         return payment;
     }
 
     public BigDecimal lineTotal(String productId) {
@@ -108,7 +113,55 @@ public class CheckoutPage extends BasePage {
 
     }
 
+    public void assertAddressDeliveryDisplayedIsCorrect(SignupData data) {
+        assertLoaded();
+
+        WebElement addressDelivery = driver.findElement(ADDRESS_DELIVERY);
+        assertThat(addressDelivery.findElement(By.cssSelector("li.address_firstname.address_lastname")).getText().trim())
+                .isEqualTo(data.getTitle() + ". " + data.getFirstName() + " " + data.getLastName());
+
+        List<WebElement>  addressElement = addressDelivery.findElements(By.cssSelector("li.address_address1.address_address2"));
+
+        List<String> addressList = new ArrayList<>();
+        for (WebElement el : addressElement) {
+            String text = el.getText().trim();
+            if (!text.isEmpty()) addressList.add(text);
+        }
+        assertThat(addressList).contains(data.getCompany());
+        assertThat(addressList).contains(data.getAddress());
+        assertThat(addressList).contains(data.getAddress2());
+
+        assertThat(addressDelivery.findElement(By.cssSelector("li.address_city.address_state_name.address_postcode")).getText().trim())
+                .isEqualTo(data.getCity() + " " + data.getState() + " " + data.getZipcode());
+
+        assertThat(addressDelivery.findElement(By.cssSelector("li.address_country_name")).getText().trim())
+                .isEqualTo(data.getCountry());
+
+        assertThat(addressDelivery.findElement(By.cssSelector("li.address_phone")).getText().trim())
+                .isEqualTo(data.getMobileNumber());
 
 
+    }
+
+private List<String> addressLiLinesWithoutTitle(By addressBlock)
+{
+    WebElement box = visible(addressBlock);
+    List<WebElement> lis = box.findElements(By.tagName("li"));
+
+    List<String> lines = new ArrayList<>();
+    for (WebElement li : lis) {
+        if (!li.findElements(By.tagName("h3")).isEmpty()) continue; // si le li contient h3 on le saute et on passe au suivant
+        String text = li.getText().trim();
+        if (!text.isEmpty()) lines.add(text);
+    }
+    return lines;
+}
+
+public void assertAddressDeliveryAndBillingAreTheSame() {
+       assertLoaded();
+        List<String> delivery = addressLiLinesWithoutTitle(ADDRESS_DELIVERY);
+        List<String> billing = addressLiLinesWithoutTitle(ADDRESS_INVOICE);
+        assertThat(delivery).isEqualTo(billing);
+}
 
 }

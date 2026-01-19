@@ -6,7 +6,6 @@ import core.pages.CartPage;
 import core.pages.ProductsPage;
 import org.testng.annotations.Test;
 
-import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SelectorDebugTests extends BaseTest {
