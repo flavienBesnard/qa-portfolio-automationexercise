@@ -356,6 +356,8 @@ try {
 
 
 
+
+
     // Renvoie le titre de la page
     protected String title() {
         return driver.getTitle();

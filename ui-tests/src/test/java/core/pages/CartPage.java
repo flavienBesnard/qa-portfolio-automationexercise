@@ -1,6 +1,7 @@
 package core.pages;
 
 
+import org.checkerframework.checker.units.qual.C;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -32,8 +33,10 @@ public class CartPage extends BasePage {
 
     public CheckoutPage proceedToCheckout() {
         assertLoaded();
-    click(BTN_PROCEED_TO_CHECKOUT);
-    return new CheckoutPage(driver);
+        click(BTN_PROCEED_TO_CHECKOUT);
+        CheckoutPage checkout = new CheckoutPage(driver);
+        checkout.assertLoaded();
+        return checkout;
     }
 
     public void deleteItemToCartByProductId(String productId) {

@@ -60,7 +60,9 @@ public String getProductNameById(String productId) {
     public  CartPage viewCartFromModal() {
         assertLoaded();
     click(VIEW_CART_LINK);
-    return new CartPage(driver);
+    CartPage cart = new CartPage(driver);
+    cart.assertLoaded();
+    return cart;
     }
 
     public void continueShoppingFromModal() {

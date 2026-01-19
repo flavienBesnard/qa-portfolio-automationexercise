@@ -15,14 +15,13 @@ public class PaymentPage extends BasePage {
         super(driver);
     }
 
-    public boolean isLoaded() {
+    public void assertLoaded() {
         visible(PAYMENT_INFO);
         visible(NAME_ON_CARD);
-        return true;
     }
 
     public boolean hasPaymentForm() {
-        isLoaded();
+        assertLoaded();
         visible(NAME_ON_CARD);
         visible(CARD_NUMBER);
         visible(CVC);

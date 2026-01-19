@@ -11,7 +11,13 @@ public class AccountCreatedPage extends BasePage {
         super(driver);
     }
 
+    public void assertLoaded() {
+        visible(ACCOUNT_CREATED);
+    }
+
     public boolean isAccountCreated() {
         return isVisible(ACCOUNT_CREATED, Duration.ofSeconds(2));
     }
+
+
 }

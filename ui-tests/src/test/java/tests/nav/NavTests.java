@@ -3,7 +3,6 @@ import core.pages.ProductsPage;
 import core.test.BaseTest;
 import org.testng.annotations.Test;
 import core.pages.HomePage;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class NavTests extends BaseTest {
 
