@@ -1,9 +1,13 @@
 package tests.checkout;
 
+import core.config.Config;
+import core.data.PaymentData;
+import core.data.PaymentDataFactory;
 import core.data.SignupData;
 import core.data.SignupDataFactory;
 import core.pages.*;
 import core.test.BaseTest;
+import flows.AuthFlow;
 import flows.SignupFlow;
 import org.testng.annotations.Test;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,5 +54,48 @@ public class CheckoutTests extends BaseTest {
          assertThat(delete.isAccountDeleted()).isTrue();
 
     }
+
+
+    /**
+     * CT-ID : CT-CHECKOUT-002
+     * EX-ID : EX-20
+     *
+     * Objectif : Vérification des champs obligatoires du formulaire de paiement
+     * Critères de réussite : - Le paiement n'est pas traité
+     *                        - Un message d'erreur ou une indication visuelle apparaît pour les champs manquant
+     *                        - L'utilisateur reste sur la même page de paiement
+     *                        - Aucun message de succès ni confirmation de commande n'est affiché
+     *                        - Aucun comportement inattendu n'est observé
+     *
+     * Préconditions :   1. Utilisateur connecté
+     *                   2. Panier contenant au moins 1 produit
+     *                   3. Formulaire de paiement affiché (depuis CT-CHECKOUT-001)
+     *
+     * Note stabilité : - Test exécuté sur un site public (pubs/overlays possibles) --> mécanisme de contournement présent dans le code
+     */
+
+    @Test(groups = {"ui","checkout","regression"}, description = "CT-CHECKOUT-002 / EX-20 / Vérification des champs obligatoires du formulaire de paiement")
+    public void checkout_should_not_confirm_order_when_payment_card_number_is_missing() {
+        // Préconditions
+        PaymentData data = PaymentDataFactory.missingCardNumber();
+        HomePage home = AuthFlow.loginAsTestUser(driver());
+        ProductsPage products =  home.goToProducts();
+        products.addProductToCartById("1");
+        CartPage cart = products.viewCartFromModal();
+        CheckoutPage checkout = cart.proceedToCheckout();
+        PaymentPage payment = checkout.placeOrder();
+        payment.assertPaymentFormVisible();
+
+        // Action
+        payment.fillMandatoryFields(data);
+
+        //Vérification
+        payment.assertCardNumberIsRequiredOnSubmit();
+
+
+
+    }
+
+
 
 }
