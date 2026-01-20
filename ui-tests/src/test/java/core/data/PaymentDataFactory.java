@@ -18,4 +18,16 @@ public class PaymentDataFactory {
 
         );
     }
+
+    public static PaymentData validDefaultUnique() {
+        Faker faker = new Faker();
+        return new PaymentData(
+                faker.name().fullName(),
+                faker.number().digits(16),
+                faker.number().digits(3),
+                "01",
+                "2030"
+
+        );
+    }
 }

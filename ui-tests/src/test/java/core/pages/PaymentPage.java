@@ -2,6 +2,8 @@ package core.pages;
 import core.data.PaymentData;
 import org.openqa.selenium.*;
 
+import java.time.Duration;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PaymentPage extends BasePage {
@@ -60,6 +62,15 @@ public class PaymentPage extends BasePage {
         String msg = (String) ((JavascriptExecutor) driver).executeScript("return arguments[0].validationMessage;", cardNumberAfter);
         assertThat(msg).isNotBlank();
 
+
+    }
+
+    public PaymentDonePage payAndConfirmOrderAndWaitDone(){
+        payAndConfirmOrder();
+        isVisible(ORDER_SUCCESS, Duration.ofSeconds(2));
+        PaymentDonePage paymentDone = new PaymentDonePage(driver);
+        paymentDone.assertLoaded();
+        return paymentDone;
 
     }
 }
