@@ -31,16 +31,26 @@ setx TEST_USER_PASSWORD "votre_mot_de_passe"
 ```
 Après setx fermer et rouvrir le terminal et l'IDE
 
-### Lancer le projet et exécuter ceci
-API smoke : mvn -pl api-tests test -Dgroups=smoke
-UI smoke  : mvn -pl ui-tests  test -Dgroups=smoke
-
+### Exécuter les smoke tests
+API smoke :
+```bash
+ mvn -pl api-tests test -Dgroups=smoke
+ ```
+UI smoke  : 
+```bash
+mvn -pl ui-tests  test -Dgroups=smoke
+```
+### Exécuter les tests de régression :
+UI : 
+```bash
+mvn -pl ui-tests test -Dgroups=regression
+```
 
 
  ## Objectifs du projet
  - Mettre en pratique une **démarche de test structurée** (ISTQB) :  exigences, cas de tests, priorisation (H/M/B), traçabilité (EX <-> CT <-> exécutions <-> bugs)
  - Concevoir et exécuter des **tests manuels** documentés ainsi que la gestion d'anomalies
- - Mettre en place une **automatisation ciblée et pertinente** : **smoke** puis **régression** (prévue)
+ - Mettre en place une **automatisation ciblée et pertinente** : **smoke** puis **régression** (UI critiques (H) réalisées et les API sont en cours)
  - Code propre et maintenable (POM, waits centralisés, stabilité)
 
  ## Démarche QA & méthodologie
@@ -76,7 +86,7 @@ Les documents de référence sont disponibles dans le dossier `docs/`.
     - Authentification
     - Gestion du compte utilisateur (CRUD)
 
-- **Automatisation** : Voir section Smoke automatisé (v1). La régression est prévue.
+- **Automatisation** : Voir section Smoke automatisé (v1). La régression est en cours.
 
 
 
@@ -87,14 +97,14 @@ L'automatisation est **volontairement ciblée** :
     - Vérification rapide des parcours critiques
     - Utilisés comme **go/no-go**
 - **Régression automatisée ciblée**
-    - Prévue après stabilisation du smoke
+    - En cours, les régression UI (H) ont été réalisées, les régression API sont en cours
 
 Les tests automatisés reprennent les **CT-ID** afin de maintenir la traçabilité avec les tests manuels.
 
-Le scénario de confirmation de paiement , bien que métier critique, est volontairement exclu du smoke UI afin de garantir la stabilité des exécutions. Il est prévu dans une régression automatisée ciblée. 
+Le scénario de confirmation de paiement , bien que métier critique, est volontairement exclu du smoke UI afin de garantir la stabilité des exécutions. Il est réalisé dans une régression automatisée ciblée. 
 
 
-## Smoke automatisé (v1)
+## Smoke automatisée 
 ### UI (Selenium)
 - CT-AUTH-001 / EX-02 - Login OK
 - CT-CART-001 / EX-13 - Add to cart 
@@ -103,6 +113,20 @@ Le scénario de confirmation de paiement , bien que métier critique, est volont
 ### API (RestAssured)
 - CT-API-001 / EX-24 - GET '/productsList' -> 200 
   > Note : AutomationExercise renvoie parfois un `Content-Type` incorrect (`text/html`) malgré un body JSON.
+
+
+## Régression automatisée
+  - CT-AUTH-002 / EX-01 - Login KO
+  - CT-SIGNUP-001 / EX-04 - Création de compte valide
+  - CT-CART-004 / EX-16 - Suppression d'un produit du panier
+  - CT-CART-002 / EX-17 - Total du panier calculé correctement
+  - CT-CHECKOUT-003 / EX-18 - Affichage de l'adresse enregistrée au checkout
+  - CT-CHECKOUT-002 / EX-20 - Vérification des champs obligatoires du formulaire de paiement
+  - CT-NAV-001 / EX-12 - Navigation : aller sur la page products via la navbar
+  - CT-PAYMENT-001 / EX-20 - Paiement réussi et confirmation de commande
+  - CT-PRODUCTS-005 / EX-11 - Affichage des informations minimales sur la fiche produit
+
+
 
 
 ## Exécution des tests
@@ -115,17 +139,21 @@ Le scénario de confirmation de paiement , bien que métier critique, est volont
 
 ### Exécution locale (Windows / PowerShell)
 
-**API**
+**API SMOKE**
 ```bash
 mvn -pl api-tests test -Dgroups=smoke
 ```
-**UI** 
+**UI SMOKE** 
 ```bash
 mvn -pl ui-tests test -Dgroups=smoke
 ```
 **Exécution par groupe** (lance smoke sur api-tests et ui-tests)
 ```bash
 mvn test -Dgroups=smoke
+```
+**UI RÉGRESSION**
+```bash
+mvn -pl ui-tests test -Dgroups=regression
 ```
 
 ### Groupes de tests
@@ -155,10 +183,10 @@ Tout est dans docs/ :
 Les captures et preuves sont disponibles dans le dossier : `docs/preuves`.
 
 ## État du projet
-- Documentation QA : finalisée
+- Documentation QA : réalisée
 - Tests manuels : réalisés
 - Automatisation smoke : réalisée
-- Régression automatisée : prévue
+- Régression automatisée : Régression UI critique (H) réalisées, régression API prévues
 - CI : en place (smoke), UI nécessite secrets
 
 ## Notes
