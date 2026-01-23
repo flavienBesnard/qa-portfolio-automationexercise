@@ -15,7 +15,8 @@ public class SmokeProductsTests {
      * <p>Objectif : Liste des produits disponible via API
      * <p>
      * Critères de réussite :
-     * - Le code de réponse HTTP est 200
+     * - Code HTTP = 200 (comportement de l'API)
+     * - Body JSON : responseCode = 200
      * - La réponse contient une structure JSON valide
      * - La liste des produits est présente et non vide (au moins 1 produit est retourné)
      * - Aucun comportement inattendu n'est observé
@@ -25,7 +26,7 @@ public class SmokeProductsTests {
     @Test(
             groups = {"api", "smoke"},
             description = "CT-API-001 / EX-24 / Liste des produits disponible via API")
-    public void get_productsList_returns_200() {
+    public void should_productsList_return_responseCode_200_and_products_not_empty() {
         // Préconditions
         String baseUrl = ApiConfig.apiBaseUrl();
         // Action
