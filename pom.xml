@@ -1,49 +1,61 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>io.github.flavienBesnard</groupId>
-  <artifactId>qa-portfolio-automationexercise</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.github.flavienBesnard</groupId>
+    <artifactId>qa-portfolio-automationexercise</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-  <properties>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <selenium.version>4.24.0</selenium.version>
-    <testng.version>7.10.2</testng.version>
-    <restassured.version>5.5.0</restassured.version>
-    <allure.version>2.29.0</allure.version>
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <selenium.version>4.24.0</selenium.version>
+        <testng.version>7.10.2</testng.version>
+        <restassured.version>5.5.0</restassured.version>
+        <allure.version>2.29.0</allure.version>
 
-    <!-- TestNG groups -->
-    <groups></groups>
-    <excludedGroups>debug</excludedGroups>
+        <!-- TestNG groups -->
+        <groups></groups>
+        <excludedGroups>debug</excludedGroups>
 
-  </properties>
+    </properties>
 
-  <modules>
-    <module>ui-tests</module>
-    <module>api-tests</module>
-  </modules>
+    <modules>
+        <module>ui-tests</module>
+        <module>api-tests</module>
+    </modules>
 
-  <build>
+    <build>
 
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.2.5</version>
-          <configuration>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
 
-            <!-- Filtrage TestNG -->
-            <groups>${groups}</groups>
-            <excludedGroups>${excludedGroups}</excludedGroups>
+                    <!-- Filtrage TestNG -->
+                    <groups>${groups}</groups>
+                    <excludedGroups>${excludedGroups}</excludedGroups>
 
-            <systemPropertyVariables>
-              <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
-            </systemPropertyVariables>
-          </configuration>
-        </plugin>
-      </plugins>
-  </build>
+                    <systemPropertyVariables>
+                        <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.43.0</version>
+                <configuration>
+                    <java>
+                        <removeUnusedImports/>
+                        <importOrder/>
+                    </java>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
 </project>

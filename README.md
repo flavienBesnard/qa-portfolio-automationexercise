@@ -1,11 +1,11 @@
 # QA Portfolio - AutomationExercise de Flavien
 Projet QA complet réalisé sur le site de démonstration **AutomationExercise**.
-L'objectif est de présenter une **démarche QA professionnelle** (ISTQB) : allant de la mise en place des différentes documentations (exigences, cas de tests, rapport de bugs et matrice de traçabilité) aux tests manuels et automatisés (UI & API), avec une forte attention portée à la **méthodologie ISTQB**, à la **traçabilité** et à la **qualité du code**.
+L'objectif est de présenter une **démarche QA professionnelle** (ISTQB) : allant de la mise en place des différentes documentations (exigences, cas de tests, rapport de bugs et matrice de traçabilité) aux tests manuels et automatisés (UI & API) sans oublier la **CI**, avec une forte attention portée à la **méthodologie ISTQB**, à la **traçabilité** et à la **qualité du code**.
 
 
 ## Quickstart
 
-### Créer un compte de test (requis pour les tests nécessitant l'authentification)
+### Créer un compte de test (requis pour les tests nécessitant le login)
 1. Aller sur https://www.automationexercise.com/
 2. Aller sur la page Signup / Login
 3. Créer un compte 
@@ -45,6 +45,8 @@ UI :
 ```bash
 mvn -pl ui-tests test -Dgroups=regression
 ```
+API :
+La régression API est en cours.
 
 
  ## Objectifs du projet
@@ -127,7 +129,9 @@ Le scénario de confirmation de paiement , bien que métier critique, est volont
   - CT-PRODUCTS-005 / EX-11 - Affichage des informations minimales sur la fiche produit
 
 
-
+## CI (GitHub Actions)
+  - api-smoke : exécute le smoke API
+  - ui-smoke : exécute le smoke UI en headless
 
 ## Exécution des tests
 - Pour lancer rapidement le projet voir **Quickstart**
@@ -189,7 +193,7 @@ Les captures et preuves sont disponibles dans le dossier : `docs/preuves`.
 - Régression automatisée : Régression UI critique (H) réalisées, régression API prévues
 - CI : en place (smoke), UI nécessite secrets
 
-## Notes
+## Notes (site tiers)
 Ce projet est réalisé sur un site tiers de démonstration, présence possible d'overlays/publicités (ex: #google_vignette). Le projet intègre donc des contournements.
 
 

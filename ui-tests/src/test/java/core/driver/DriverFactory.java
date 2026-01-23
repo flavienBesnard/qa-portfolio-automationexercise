@@ -6,20 +6,20 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DriverFactory {
-    /**
-     * DriverFactory :
-     * - 1 driver par test (ThreadLocal) pour éviter les collisions entre tests.
-     * - Local (ChromeDriver ou RemoteWebDriver).
-     * - Options Chrome orentiées stabilité (désactivation password manager / notifications).
-     */
-    private DriverFactory() {}
-
     private static final ThreadLocal<WebDriver> DRIVER = new ThreadLocal<>();
+
+    /**
+     * DriverFactory : - 1 driver par test (ThreadLocal) pour éviter les collisions entre tests. -
+     * Local (ChromeDriver ou RemoteWebDriver). - Options Chrome orentiées stabilité (désactivation
+     * password manager / notifications).
+     */
+    private DriverFactory() {
+    }
+
     public static void initDriver() {
         if (DRIVER.get() != null) {
             return;
@@ -58,8 +58,7 @@ public class DriverFactory {
         WebDriver driver = DRIVER.get();
         if (driver == null) {
             throw new IllegalStateException(
-                    "WebDriver non initialisé. Appelle DriverFactory.initDriver() avant."
-            );
+                    "WebDriver non initialisé. Appelle DriverFactory.initDriver() avant.");
         }
         return driver;
     }

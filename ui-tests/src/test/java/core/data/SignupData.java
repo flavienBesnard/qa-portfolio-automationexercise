@@ -20,29 +20,24 @@ public class SignupData {
     private final String zipcode;
     private final String mobileNumber;
 
-
-
-
-
     public SignupData(
-             String name,
-             String email,
-             String title,
-             String password,
-             String dayOfBirth,
-             String monthOfBirth,
-             String yearOfBirth,
-             String firstName,
-             String lastName,
-             String company,
-             String address,
-             String address2,
-             String country,
-             String state,
-             String city,
-             String zipcode,
-             String mobileNumber
-    ) {
+            String name,
+            String email,
+            String title,
+            String password,
+            String dayOfBirth,
+            String monthOfBirth,
+            String yearOfBirth,
+            String firstName,
+            String lastName,
+            String company,
+            String address,
+            String address2,
+            String country,
+            String state,
+            String city,
+            String zipcode,
+            String mobileNumber) {
         this.name = name;
         this.email = email;
         this.title = title;
@@ -60,28 +55,74 @@ public class SignupData {
         this.city = city;
         this.zipcode = zipcode;
         this.mobileNumber = mobileNumber;
-
     }
-    //Getters
-    public String getName() { return name; }
-    public String getEmail() { return email; }
-    public String getTitle() { return title; }
-    public String getPassword() { return password; }
-    public String getDayOfBirth() { return dayOfBirth; }
-    public String getMonthOfBirth() { return monthOfBirth; }
-    public String getYearOfBirth() { return yearOfBirth; }
-    public String getFirstName() { return firstName; }
-    public String getLastName() { return lastName; }
-    public String getCompany() { return company; }
-    public String getAddress() { return address; }
-    public String getAddress2() { return address2; }
-    public String getCountry() { return country; }
-    public String getState() { return state; }
-    public String getCity() { return city; }
-    public String getZipcode() { return zipcode; }
-    public String getMobileNumber() { return mobileNumber; }
 
+    // Getters
+    public String getName() {
+        return name;
+    }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getDayOfBirth() {
+        return dayOfBirth;
+    }
+
+    public String getMonthOfBirth() {
+        return monthOfBirth;
+    }
+
+    public String getYearOfBirth() {
+        return yearOfBirth;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getAddress2() {
+        return address2;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getZipcode() {
+        return zipcode;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
 }
-
-

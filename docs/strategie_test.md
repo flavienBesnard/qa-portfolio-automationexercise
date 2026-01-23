@@ -10,13 +10,12 @@ Ce document s'inscrit dans une logique **ISTQB** et sert de référence pour :
 
 
 ## 2. Contexte du projet 
-AutomationExercise est un site e-commerce de démonstration utilisé comme support de projet QA.
+AutomationExercise est un site e-commerce de démonstration utilisé comme support de portfolio QA.
 
 Le projet vise à démontrer : 
-- une démarche de test structurée
-- la traçabilité exigences -> tests -> exécutions -> bugs
+- une démarche de test structurée (EX -> CT -> exécutions -> bugs -> traçabilité)
 - une automatisation ciblée et pertinente (UI + API)
-- un socle technique propre et maintenable
+- un socle technique propre et maintenable (POM, waits/wrappers stabilité, CI)
 
 ## 3. Périmètre de test
 ### 3.1 Périmètre couvert
@@ -37,7 +36,7 @@ Le projet vise à démontrer :
 ### 3.2 Hors périmètre
 - tests de performance (site tiers de démonstration)
 - tests de sécurité approfondis
-- tests de compatibilité navigateurs étendus
+- tests de compatibilité navigateurs étendues
 - tests d'accessibilité avancés
 
 Ces aspects pourraient être traités sur une application interne ou un environnement dédié, hors site tiers.
@@ -45,15 +44,14 @@ Ces aspects pourraient être traités sur une application interne ou un environn
 ## 4. Niveaux et types de test
 
 ### 4.1 Niveaux de test
-- **Tests d'intégration (API)**
 - **Tests système (UI Web)**
+- **Tests système (API)** : aussi appelé tests de service, exécutés sur un environnement complet.
 
 Chaque niveau est traité indépendamment mais de manière cohérente au sein de la stratégie globale.
 
 
 ### 4.2 Types de tests 
-- Tests fonctionnels
-- Tests positifs et négatifs
+- Tests fonctionnels (positifs / négatifs)
 - Tests exploratoires (documentés via chartes)
 - Tests automatisés (smoke et régression ciblée)
 
@@ -107,20 +105,26 @@ Il inclut :
 - **UI** :
   - Connexion utilisateur
   - Ajout au panier
-  - Accès au checkout
+  - Accès au formulaire de paiement
 - **API** : Récupération de la liste des produits
 
 Les tests smoke sont courts, stables et exécutables en CI.
 
 Si le smoke échoue, la campagne de tests s'arrête (go/no-go).
 
-Note : Le smoke automatisé est composé de cas de test prioritaires (H) les plus stables et représentatifs du parcours critique.
+Note : - Le smoke automatisé est composé de cas de test prioritaires (H) les plus stables et représentatifs du parcours critique.
+       - Le paiement complet (EX-20) est exclu du smoke pour stabilité et couvert en régression.
 
 ### 8.3 Régression automatisée
-Une régression automatisée ciblée est prévue après stabilisation du smoke.
+Une régression automatisée ciblée est  effectuée :
 - couverture élargie
 - scénarios positifs et négatifs
 - maintien de la traçabilité avec les CT-ID
+
+La régression automatisée ciblée a été effectuée sur : 
+- **UI** : couverture critique (H) + validations clés
+- **API** : en cours
+
 
 ### 8.4 Critères de succès
 La stratégie de test est considérée comme efficace lorsque : 
@@ -133,16 +137,16 @@ La stratégie de test est considérée comme efficace lorsque :
 ### 9.1 Exécution locale
 - Environnement : Windows
 - Outils : Maven, Java, navigateur Chrome
-- Paramétrage via variables d'environnement (`BASE_URL`, `API_BASE_URL`)
+- Paramétrage via variables d'environnement (`TEST_USER_EMAIL`, `TEST_USER_PASSWORD`, `BASE_URL`, `API_BASE_URL`, `HEADLESS`)
 
 ### 9.2 Intégration continue (CI)
 - GitHub Actions
-- Exécution en environnement Linux 
-- Navigateur en mode headless via Selenium
-- Objectif : détecter rapidement les régressions
+- `api-smoke` puis `ui-smoke`
+- UI en **headless**
 
 ## 10. Gestion des données de test
-- Données gérées à la volée lorsque nécessaire
+- compte de test fixe pour les tests necéssitant un login (variables d'environnement)
+- test création/compte : données uniques + nettoyage (delete account)
 - Tests smoke conçus pour être **idempotents**
 - Pas de dépendance forte entre les tests
 
@@ -151,12 +155,13 @@ La stratégie de test est considérée comme efficace lorsque :
 |------ | ----------- | ------- | 
 |R1 | Différences local / CI | Versions figées, exécution headless |
 |R2 | Instabilité du site tiers | Tests courts, ciblés |
-|R3 | Tests flaky | Attentes explicites, périmètre réduit |   
-|R4 | Données persistantes | Tests indépendants et nettoyables | 
+|R3 | Overlays / pubs (google vignette..) | Contournement via wrappers click, retries, clean URL |
+|R4 | Tests flaky | Attentes explicites, retry, assertLoaded|   
+|R5 | Données persistantes | création unique + cleanup systématique | 
 
 ## 12. Traçabilité
 La traçabilité est assurée entre exigences, cas de test, exécutions et anomalies.
-À l'étape d'automatisation, les tests automatisés reprendront les CT-ID afin de maintenir ce lien.
+À l'étape d'automatisation, les tests automatisés reprennent les CT-ID afin de maintenir ce lien.
 
 
 
@@ -170,7 +175,6 @@ Le projet est évolutif et pourra intégrer ultérieurement :
 - **CI (Continuous Integration)** : exécuter automatiquement les tests à chaque push (GitHub Actions) pour un feedback rapide.
 - **Smoke tests** : tests vitaux, très courts. S’ils échouent, on arrête.
 - **Headless** : navigateur sans interface (plus rapide/stable en CI).
-- **EXTERNAL_TARGET** : cible = site externe de démo. Tests **fonctionnels légers** uniquement.
 - **Idempotent** : rejouer le test ne change pas l’état (ex. GET, lecture de titre).
 - **Flaky** : test instable (passe/échoue sans changement de code). On limite ça avec des smokes simples, headless et une config propre.
 - **Mock** : faux service/API (ex. WireMock) pour stabiliser ou simuler des erreurs (utilisé plus tard).
