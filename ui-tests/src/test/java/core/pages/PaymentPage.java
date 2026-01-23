@@ -1,6 +1,10 @@
 package core.pages;
+
 import core.data.PaymentData;
-import org.openqa.selenium.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 import java.time.Duration;
 
@@ -16,6 +20,7 @@ public class PaymentPage extends BasePage {
     private static final By EXPIRATION_YEAR = By.cssSelector("[data-qa=\"expiry-year\"]");
     private static final By PAY_AND_CONFIRM_ORDER = By.cssSelector("[data-qa=\"pay-button\"]");
     private static final By ORDER_SUCCESS = By.cssSelector(".alert-success.alert");
+
     public PaymentPage(WebDriver driver) {
         super(driver);
     }
@@ -37,11 +42,11 @@ public class PaymentPage extends BasePage {
 
     public void fillMandatoryFields(PaymentData data) {
         assertLoaded();
-        clearAndSendKeys(NAME_ON_CARD,data.getNameOnCard());
+        clearAndSendKeys(NAME_ON_CARD, data.getNameOnCard());
         clearAndSendKeys(CARD_NUMBER, data.getCardNumber());
         clearAndSendKeys(CVC, data.getCvc());
-        clearAndSendKeys(EXPIRATION_MONTH,data.getExpiryMonth());
-        clearAndSendKeys(EXPIRATION_YEAR,data.getExpiryYear());
+        clearAndSendKeys(EXPIRATION_MONTH, data.getExpiryMonth());
+        clearAndSendKeys(EXPIRATION_YEAR, data.getExpiryYear());
     }
 
     public void payAndConfirmOrder() {
@@ -59,18 +64,18 @@ public class PaymentPage extends BasePage {
         assertLoaded();
         assertThat(isVisible(ORDER_SUCCESS)).isFalse();
         WebElement cardNumberAfter = visible(CARD_NUMBER);
-        String msg = (String) ((JavascriptExecutor) driver).executeScript("return arguments[0].validationMessage;", cardNumberAfter);
+        String msg =
+                (String)
+                        ((JavascriptExecutor) driver)
+                                .executeScript("return arguments[0].validationMessage;", cardNumberAfter);
         assertThat(msg).isNotBlank();
-
-
     }
 
-    public PaymentDonePage payAndConfirmOrderAndWaitDone(){
+    public PaymentDonePage payAndConfirmOrderAndWaitDone() {
         payAndConfirmOrder();
         isVisible(ORDER_SUCCESS, Duration.ofSeconds(2));
         PaymentDonePage paymentDone = new PaymentDonePage(driver);
         paymentDone.assertLoaded();
         return paymentDone;
-
     }
 }
