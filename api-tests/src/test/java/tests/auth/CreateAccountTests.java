@@ -34,7 +34,7 @@ public class CreateAccountTests {
      */
     @Test(groups = {"api", "auth", "regression"}, description = "CT-API-004 / EX-30 / Création d'un compte utilisateur via l'API /createAccount")
     public void should_createAccount_return_responseCode_201_and_user_created_message() {
-
+        // Préconditions
         String baseUrl = ApiConfig.apiBaseUrl();
         Faker faker = new Faker();
         String timestamp = String.valueOf(System.currentTimeMillis());
@@ -60,6 +60,7 @@ public class CreateAccountTests {
         payload.put("city", faker.address().city());
         payload.put("mobile_number", faker.number().digits(10));
 
+        //Action
         try {
 
 
@@ -67,6 +68,8 @@ public class CreateAccountTests {
                     .contentType("application/x-www-form-urlencoded")
                     .formParams(payload)
                     .when().post("createAccount");
+
+            // Vérification
             String body = responseCreate.asString();
 
             assertThat(responseCreate.statusCode()).isEqualTo(200);
@@ -93,7 +96,7 @@ public class CreateAccountTests {
 
             try {
 
-
+                // cleanup
                 Response responseDelete = given().baseUri(baseUrl)
                         .contentType("application/x-www-form-urlencoded")
                         .formParam("email", email).formParam("password", password)
